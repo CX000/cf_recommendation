@@ -19,10 +19,9 @@ class cf_recom:
         self.movies_df = pd.read_csv(self.movie_path, 
                                 usecols=['movieId', 'title'],
                                 dtype={'movieId': 'int32', 'title': 'str'})
-        ratings_df = pd.read_csv(self.rating_path,
+        self.ratings_df = pd.read_csv(self.rating_path,
                                 usecols=['userId', 'movieId', 'rating'],
                                 dtype={'userId': 'int32', 'movieId': 'int32', 'rating': 'float32'})
-        self.ratings_df = ratings_df[:20000]  # used only first 2M records for testing
         rating_pivot = self.ratings_df.pivot(index='userId', 
                                             columns='movieId', 
                                             values='rating').fillna(0)
@@ -60,23 +59,18 @@ class cf_recom:
                 right_on = 'movieId').rename(columns = {user_row_number: 'Predictions'}).sort_values('Predictions', ascending = False).iloc[:num_recommendations, :-1]
         return rate, recommendations
     
-    # def save(self, file_name):
-    #     """Save thing to a file."""
-    #     f = open(file_name,"w")
-    #     pickle.dump(self,f)
-    #     f.close()
     
     
 if __name__ == "__main__":
     
     from cfrecom import cf_recom
-    movies_filepath = os.path.join(os.getcwd(),'movie_recom/movie.csv')
-    ratings_filepath = os.path.join(os.getcwd(),'movie_recom/rating.csv')
+    movies_filepath = os.path.join(os.getcwd(),'movie_data/movie.csv')
+    ratings_filepath = os.path.join(os.getcwd(),'movie_data/rating_small.csv')
     cf = cf_recom(movies_filepath, ratings_filepath)
     cf.train()
     test_json = {'user_id': 5, 'item_id': 10}
     rate, recommendations = cf.predict(test_json)
     
-    model_name = 'cf_model1.pkl'
+    model_name = 'cf_model.pkl'
     pickle.dump(cf, open(model_name, 'wb')) # save model as pkl file
     
